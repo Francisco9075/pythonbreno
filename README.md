@@ -1,48 +1,36 @@
-# 🛒 Loja Virtual em Python
+Loja Virtual em Python
+Este é um projeto simples de uma loja virtual feito em Python, para ser usado no terminal.
+A ideia é praticar o uso de tratamento de erros com try, except, else, finally, além de criar erros personalizados.
 
-Este é um projeto de loja virtual feito em Python para a escola, executado no terminal.  
-O foco é aplicar **tratamento de erros** com `try`, `except`, `else`, `finally` e criar **exceções personalizadas**.
+Funcionalidades
+Ver os produtos disponíveis, com preços e stock;
 
----
+Adicionar produtos ao carrinho (máximo de 100 unidades por produto);
 
-## 📌 Funcionalidades
+Ver o carrinho e o total da compra;
 
-- Ver lista de produtos com preços e stock disponível;
-- Adicionar produtos ao carrinho (respeitando limite de stock máximo de 100);
-- Consultar o carrinho com total da compra;
-- Consultar o saldo disponível;
-- Adicionar saldo;
-- Simular pagamento (com verificação de saldo).
+Consultar e adicionar saldo;
 
----
+Fazer o pagamento (só se tiver saldo suficiente).
 
-## 💡 Exceções Personalizadas
+Erros Personalizados
+ProdutoInexistenteError
+Usado quando se tenta adicionar um produto que não existe.
 
-### `ProdutoInexistenteError`
-Lançada quando o utilizador tenta adicionar um produto que **não existe**.
+SaldoInsuficienteError
+Aparece quando o saldo não é suficiente para pagar a compra.
 
-### `SaldoInsuficienteError`
-Lançada quando o utilizador tenta pagar uma compra sem saldo suficiente.
+Tratamento de Erros
+O programa consegue identificar e tratar situações como:
 
----
+Produto não encontrado;
 
-## ⚠️ Tratamento de Erros
+Quantidade inválida (negativa ou não numérica);
 
-O sistema trata os seguintes erros:
+Tentar comprar mais do que o stock disponível;
 
-- Produto inexistente;
-- Quantidade inválida (não numérica ou negativa);
-- Adicionar mais do que o stock disponível (máximo 100);
-- Tentar pagar com carrinho vazio;
-- Saldo insuficiente;
-- Tipo de dados incorreto (ValueError, etc.).
+Carrinho vazio no momento do pagamento;
 
----
+Saldo insuficiente;
 
-## 🧪 Como executar
-
-1. Instala o Python (se ainda não tiveres).
-2. Executa o ficheiro `.py` no terminal com o comando:
-
-```bash
-python loja_virtual.py
+Outros erros de dados (como ValueError).
