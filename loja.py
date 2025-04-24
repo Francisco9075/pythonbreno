@@ -1,201 +1,181 @@
-# excecoes.py
-# Exceções personalizadas para lidar com situações específicas
-class ProdutoInexistenteError(Exception):
-    """Quando o produto não existe no catálogo."""
-    pass
+# loja_virtual.py
 
-class SaldoInsuficienteError(Exception):
-    """Quando o saldo não cobre o total da compra."""
-    pass
+class ProdutoDesconhecido(Exception):
+    def __init__(self, mensagem="Produto não reconhecido."):
+        super().__init__(mensagem)
 
-class CarrinhoVazioError(Exception):
-    """Quando o carrinho está vazio e se tenta mexer nele."""
-    pass
+class SemSaldo(Exception):
+    def __init__(self, mensagem="Saldo insuficiente para concluir a compra."):
+        super().__init__(mensagem)
 
-produtos = {
-    "camiseta": {
-        "preco": 50.0,
-        "descricao": "Camiseta confortável de algodão.",
-        "disponibilidade": 100
-    },
-    "calças": {
-        "preco": 80.0,
-        "descricao": "Calças jeans em vários tamanhos.",
-        "disponibilidade": 100
-    },
-    "ténis": {
-        "preco": 120.0,
-        "descricao": "Ténis desportivos para corridas.",
-        "disponibilidade": 100
-    },
-    "boné": {
-        "preco": 30.0,
-        "descricao": "Boné leve, ótimo para o verão.",
-        "disponibilidade": 100
-    }
+class CarrinhoVazio(Exception):
+    def __init__(self, mensagem="O carrinho está vazio."):
+        super().__init__(mensagem)
+
+artigos = {
+    "camiseta": {"preco": 37.5, "descricao": "Conforto e estilo num só.", "stock": 100},
+    "calças": {"preco": 64.9, "descricao": "Perfeitas para o dia-a-dia.", "stock": 100},
+    "ténis": {"preco": 112.0, "descricao": "Ideais para dar aquele passeio.", "stock": 100},
+    "boné": {"preco": 18.75, "descricao": "Para proteger do sol com pinta.", "stock": 100}
 }
 
 carrinho = {}
-saldo = 200.0
+dinheiro = 1000.0
 
-def listar_produtos():
-    print("\nAqui estão os produtos que temos disponíveis:")
-    for nome, detalhes in produtos.items():
-        print(f"- {nome.capitalize()} - {detalhes['preco']:.2f}€")
-        print(f"  {detalhes['descricao']}")
-        print(f"  Em stock: {detalhes['disponibilidade']} unidades\n")
+def saldo():
+    print(f"\nSaldo disponível: {dinheiro:.2f}€\n")
 
-def adicionar_ao_carrinho():
+def carregar_conta():
+    global dinheiro
     try:
-        produto = input("Qual produto queres adicionar ao carrinho? ").strip().lower()
-
-        if produto not in produtos:
-            raise ProdutoInexistenteError("Este produto não está disponível.")
-
-        disponibilidade = produtos[produto]["disponibilidade"]
-        if disponibilidade == 0:
-            raise ValueError(f"O produto '{produto}' está esgotado no momento.")
-
-        quantidade = input(f"Quantas unidades de '{produto}' gostarias de adicionar? ").strip()
-        if not quantidade.isdigit() or int(quantidade) <= 0:
-            raise ValueError("A quantidade deve ser um número positivo.")
-        quantidade = int(quantidade)
-
-        if carrinho.get(produto, 0) + quantidade > disponibilidade:
-            raise ValueError(f"Temos só {disponibilidade} unidades de '{produto}' disponíveis.")
-
-    except (ProdutoInexistenteError, ValueError) as e:
-        print(f"Erro: {e}")
+        valor = input("Quanto queres carregar? ").replace(",", ".").strip()
+        valor = float(valor)
+        if valor <= 0:
+            raise ValueError("Tem de ser um valor positivo.")
+    except ValueError as erro:
+        print(f"Aviso: {erro}")
     else:
-        carrinho[produto] = carrinho.get(produto, 0) + quantidade
-        produtos[produto]["disponibilidade"] -= quantidade
-        print(f"{quantidade} unidades de '{produto}' foram adicionadas ao teu carrinho.")
+        dinheiro += valor
+        print(f"Conta atualizada. Novo saldo: {dinheiro:.2f}€")
     finally:
-        print("Operação concluída.\n")
+        print("Ação concluída.\n")
 
-def remover_do_carrinho():
+def ver_lista():
+    print("\nLista de artigos disponíveis:\n")
+    for nome, info in artigos.items():
+        print(f"{nome.capitalize()} - {info['preco']}€")
+        print(f"Descrição: {info['descricao']}")
+        print(f"Em stock: {info['stock']}\n")
+
+def meter_no_carrinho():
+    try:
+        item = input("Nome do artigo a adicionar: ").strip().lower()
+        if item not in artigos:
+            raise ProdutoDesconhecido("Esse artigo não está na loja.")
+
+        if artigos[item]["stock"] == 0:
+            raise ValueError(f"Infelizmente, '{item}' está esgotado.")
+
+        qtd = input("Quantidade a adicionar: ").strip()
+        if not qtd.isdigit() or int(qtd) <= 0:
+            raise ValueError("Quantidade inválida.")
+        qtd = int(qtd)
+
+        disponivel = artigos[item]["stock"]
+        if carrinho.get(item, 0) + qtd > disponivel:
+            raise ValueError(f"Apenas temos {disponivel} unidades de '{item}'.")
+
+    except (ProdutoDesconhecido, ValueError) as erro:
+        print(f"Erro: {erro}")
+    else:
+        carrinho[item] = carrinho.get(item, 0) + qtd
+        artigos[item]["stock"] -= qtd
+        print(f"{qtd} unidade(s) de '{item}' adicionadas ao carrinho.")
+    finally:
+        print("Ação concluída.\n")
+
+def tirar_do_carrinho():
     try:
         if not carrinho:
-            raise CarrinhoVazioError("O teu carrinho está vazio, não há nada para remover.")
+            raise CarrinhoVazio("O teu carrinho está vazio.")
 
-        produto = input("Qual produto queres remover do carrinho? ").strip().lower()
+        item = input("Que artigo queres remover? ").strip().lower()
+        if item not in carrinho:
+            raise ValueError("Esse artigo não está no carrinho.")
 
-        if produto not in carrinho:
-            raise ValueError(f"Não tens '{produto}' no teu carrinho.")
+        qtd = input("Quantidade a remover: ").strip()
+        if not qtd.isdigit() or int(qtd) <= 0:
+            raise ValueError("Número inválido.")
+        qtd = int(qtd)
 
-        quantidade = input(f"Quantas unidades de '{produto}' gostarias de remover? ").strip()
-        if not quantidade.isdigit() or int(quantidade) <= 0:
-            raise ValueError("A quantidade deve ser um número positivo.")
-        quantidade = int(quantidade)
+        if qtd > carrinho[item]:
+            raise ValueError(f"Tens só {carrinho[item]} unidade(s) de '{item}' no carrinho.")
 
-        if quantidade > carrinho[produto]:
-            raise ValueError(f"Só tens {carrinho[produto]} unidades de '{produto}' no carrinho.")
-
-    except (CarrinhoVazioError, ValueError) as e:
-        print(f"Erro: {e}")
+    except (CarrinhoVazio, ValueError) as erro:
+        print(f"Aviso: {erro}")
     else:
-        carrinho[produto] -= quantidade
-        produtos[produto]["disponibilidade"] += quantidade
-        if carrinho[produto] == 0:
-            del carrinho[produto]
-        print(f"{quantidade} unidades de '{produto}' foram removidas do teu carrinho.")
+        carrinho[item] -= qtd
+        artigos[item]["stock"] += qtd
+        if carrinho[item] == 0:
+            del carrinho[item]
+        print(f"{qtd} unidade(s) de '{item}' removidas do carrinho.")
     finally:
-        print("Operação concluída.\n")
+        print("Tudo tratado.\n")
 
 def mostrar_carrinho():
     try:
         if not carrinho:
-            raise ValueError("O teu carrinho está vazio, adiciona produtos para ver o conteúdo.")
+            raise ValueError("O carrinho está vazio.")
 
-        print("\nAqui está o teu carrinho de compras:")
+        print("\nCarrinho atual:")
         total = 0
-        for produto, qtd in carrinho.items():
-            subtotal = produtos[produto]["preco"] * qtd
-            print(f"- {qtd}x {produto} - {subtotal:.2f}€")
+        for nome, qtd in carrinho.items():
+            subtotal = artigos[nome]["preco"] * qtd
+            print(f"{qtd}x {nome} = {subtotal:.2f}€")
             total += subtotal
-        print(f"Total da compra: {total:.2f}€")
-
-    except ValueError as e:
-        print(f"Erro: {e}")
+        print(f"Total estimado: {total:.2f}€")
+    except ValueError as erro:
+        print(f"Erro: {erro}")
     finally:
-        print("Consulta concluída.\n")
+        print("Fim da visualização.\n")
 
-def consultar_saldo():
-    print(f"\nO teu saldo atual é: {saldo:.2f}€\n")
-
-def adicionar_saldo():
-    global saldo
-    try:
-        valor = input("Quanto gostarias de adicionar ao teu saldo? ").replace(",", ".").strip()
-        valor = float(valor)
-        if valor <= 0:
-            raise ValueError("O valor precisa ser positivo.")
-    except ValueError as e:
-        print(f"Erro: {e}")
-    else:
-        saldo += valor
-        print(f"Saldo atualizado para: {saldo:.2f}€")
-    finally:
-        print("Operação concluída.\n")
-
-def efetuar_pagamento():
-    global saldo
+def finalizar_compra():
+    global dinheiro
     try:
         if not carrinho:
-            raise ValueError("Não tens produtos no carrinho para pagar.")
+            raise ValueError("Não há nada no carrinho para pagar.")
 
-        total = sum(produtos[produto]["preco"] * qtd for produto, qtd in carrinho.items())
-        if total > saldo:
-            raise SaldoInsuficienteError("O teu saldo não é suficiente para concluir a compra.")
+        total = sum(artigos[n]["preco"] * q for n, q in carrinho.items())
+        if total > dinheiro:
+            raise SemSaldo("Não tens saldo suficiente.")
 
-    except (ValueError, SaldoInsuficienteError) as e:
-        print(f"Erro: {e}")
+    except (ValueError, SemSaldo) as erro:
+        print(f"Erro: {erro}")
     else:
-        saldo -= total
+        dinheiro -= total
         carrinho.clear()
-        print(f"Pagamento concluído! O teu novo saldo é: {saldo:.2f}€")
+        print(f"Compra feita com sucesso. Saldo restante: {dinheiro:.2f}€")
     finally:
-        print("Operação concluída.\n")
+        print("Processo terminado.\n")
 
-def menu():
+def principal():
     while True:
-        print("===== Bem-vindo à Loja Virtual =====")
-        print("1. Ver produtos")
-        print("2. Adicionar ao carrinho")
-        print("3. Remover do carrinho")
+        print("=== LOJA VIRTUAL ===")
+        print("1. Ver artigos")
+        print("2. Adicionar artigo ao carrinho")
+        print("3. Remover artigo do carrinho")
         print("4. Ver carrinho")
-        print("5. Consultar saldo")
-        print("6. Adicionar saldo")
-        print("7. Efetuar pagamento")
+        print("5. Ver saldo")
+        print("6. Carregar saldo")
+        print("7. Finalizar compra")
         print("8. Sair")
 
         try:
-            opcao = input("O que gostarias de fazer? ").strip()
-
-            match opcao:
+            acao = input("Escolhe uma opção: ").strip()
+            match acao:
                 case "1":
-                    listar_produtos()
+                    ver_lista()
                 case "2":
-                    adicionar_ao_carrinho()
+                    meter_no_carrinho()
                 case "3":
-                    remover_do_carrinho()
+                    tirar_do_carrinho()
                 case "4":
                     mostrar_carrinho()
                 case "5":
-                    consultar_saldo()
+                    saldo()
                 case "6":
-                    adicionar_saldo()
+                    carregar_conta()
                 case "7":
-                    efetuar_pagamento()
+                    finalizar_compra()
                 case "8":
-                    print("Obrigado por fazeres compras connosco! Até à próxima!")
+                    print("Até breve! Obrigado pela visita.")
                     break
                 case _:
-                    raise ValueError("Opção inválida. Tenta novamente.")
-        except ValueError as e:
-            print(f"Erro: {e}")
+                    raise ValueError("Opção não reconhecida.")
+        except ValueError as erro:
+            print(f"Aviso: {erro}")
         finally:
-            print("-----------------------------\n")
+            print("--------------------------\n")
 
 if __name__ == "__main__":
-    menu()
+    principal()
